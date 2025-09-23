@@ -138,3 +138,5 @@ app.MapPost("/place-order", async (PlaceOrderRequest orderRequest, ILogger<Progr
 .WithName("PlaceOrder");
 
 app.Run("http://0.0.0.0:8080");
+
+public partial class Program { }
