@@ -41,6 +41,7 @@ if (app.Environment.IsDevelopment())
     // Removed Swagger UI as requested previously
 }
 
+var foobar = "Unused variable";
 
 // Static list of products (moved from React app)
 var products = new List<Product>
