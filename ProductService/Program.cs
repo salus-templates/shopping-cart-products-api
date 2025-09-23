@@ -2,6 +2,7 @@
 
 using ProductService;
 using Serilog;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,13 +95,15 @@ app.MapPost("/place-order", async (PlaceOrderRequest orderRequest, ILogger<Progr
 
     if (outOfStockItems.Any())
     {
-        // Return HTTP 400 Bad Request for out-of-stock items
-        return Results.BadRequest(new PlaceOrderResponse
+        var order = new PlaceOrderResponse
         {
             Success = false,
             Message = "Order failed: Some items are out of stock or requested quantity exceeds available stock.",
             OutOfStockItems = outOfStockItems
-        });
+        };
+
+        // Return HTTP 400 Bad Request for out-of-stock items
+        return Results.BadRequest(order);
     }
 
     // Simulate stock deduction (in a real app, this would involve database updates)
@@ -117,7 +120,11 @@ app.MapPost("/place-order", async (PlaceOrderRequest orderRequest, ILogger<Progr
 
     // Generate a mock order ID
     var orderId = "ORD" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    logger.LogInformation("Order placed successfully. Order ID: {OrderId}, Delivery Address: {Address}", orderId, orderRequest.DeliveryAddress);
+
+    // Serialize the order request using Newtonsoft.Json and log it
+    var orderJson = JsonConvert.SerializeObject(orderRequest);
+    logger.LogInformation("Order placed successfully. Order ID: {OrderId}, Delivery Address: {Address}, Order Details: {OrderJson}",
+                         orderId, orderRequest.DeliveryAddress, orderJson);
 
     return Results.Ok(new PlaceOrderResponse
     {
