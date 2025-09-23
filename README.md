@@ -1,6 +1,9 @@
-# shopping-cart-backend
+# shopping-cart-products-api
 
-### API Service Environment Variables
+## Overview
 
-`AUTH_PASSKEY` - Passkey for the frontend.
-`DOTNET_PRODUCTS_API_URL` - Products service
+The Products API, written in Dotnet, is part of the Shopping Cart experience. It provides the product catalog as a Restful API.
+
+## Environment Variables
+
+None
