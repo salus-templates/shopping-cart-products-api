@@ -25,7 +25,7 @@ public class OrderPlacementTests : IClassFixture<WebApplicationFactory<Program>>
         {
             Items = new List<OrderItemRequest>
             {
-                new OrderItemRequest { Id = "prod1", Quantity = 1 }
+                new OrderItemRequest { Id = Guid.NewGuid(), Quantity = 1 }
             },
             TotalAmount = 99.99m,
             DeliveryAddress = "123 Test Street",
@@ -54,11 +54,12 @@ public class OrderPlacementTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task PlaceOrder_ProductNotFound_ReturnsBadRequest()
     {
+        var productId = Guid.NewGuid();
         var orderRequest = new PlaceOrderRequest
         {
             Items = new List<OrderItemRequest>
             {
-                new OrderItemRequest { Id = "invalid-product", Quantity = 1 }
+                new OrderItemRequest { Id = productId, Quantity = 1 }
             },
             TotalAmount = 99.99m,
             DeliveryAddress = "123 Test Street",
@@ -80,17 +81,18 @@ public class OrderPlacementTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.NotNull(orderResponse);
         Assert.False(orderResponse.Success);
         Assert.Contains("out of stock", orderResponse.Message);
-        Assert.Contains("invalid-product", orderResponse.OutOfStockItems);
+        Assert.Contains(productId, orderResponse.OutOfStockItems);
     }
 
     [Fact]
     public async Task PlaceOrder_InsufficientStock_ReturnsBadRequest()
     {
+        var productId = Guid.NewGuid();
         var orderRequest = new PlaceOrderRequest
         {
             Items = new List<OrderItemRequest>
             {
-                new OrderItemRequest { Id = "prod1", Quantity = 1000 } // Much more than available
+                new OrderItemRequest { Id = productId, Quantity = 1000 } // Much more than available
             },
             TotalAmount = 99.99m,
             DeliveryAddress = "123 Test Street",
@@ -112,7 +114,7 @@ public class OrderPlacementTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.NotNull(orderResponse);
         Assert.False(orderResponse.Success);
         Assert.Contains("out of stock", orderResponse.Message);
-        Assert.Contains("prod1", orderResponse.OutOfStockItems);
+        Assert.Contains(productId, orderResponse.OutOfStockItems);
     }
 
     [Fact]
@@ -122,8 +124,8 @@ public class OrderPlacementTests : IClassFixture<WebApplicationFactory<Program>>
         {
             Items = new List<OrderItemRequest>
             {
-                new OrderItemRequest { Id = "prod1", Quantity = 1 },
-                new OrderItemRequest { Id = "prod2", Quantity = 1 }
+                new OrderItemRequest { Id = Guid.NewGuid(), Quantity = 1 },
+                new OrderItemRequest { Id = Guid.NewGuid(), Quantity = 1 }
             },
             TotalAmount = 299.98m,
             DeliveryAddress = "456 Another Street",

@@ -1,14 +1,34 @@
 // ProductsService/Program.cs
 
+using System.Reflection;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using ProductService;
 using Serilog;
 using Newtonsoft.Json;
+using ProductService.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
-
+builder.Services.AddHttpLogging(o => { });
+builder.Services.AddPersistence(builder.Configuration);
+builder.Services
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen(c =>
+    {
+        // Include XML documentation from the API project
+        // var apiXmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        // var apiXmlPath = Path.Combine(AppContext.BaseDirectory, apiXmlFile);
+        // c.IncludeXmlComments(apiXmlPath);
+        //
+        // // Include XML documentation from the Contracts project
+        // var contractsXmlAssembly = Assembly.Load("Database.Contracts");
+        // var contractsXmlFile = $"{contractsXmlAssembly.GetName().Name}.xml";
+        // var contractsXmlPath = Path.Combine(AppContext.BaseDirectory, contractsXmlFile);
+        // c.IncludeXmlComments(contractsXmlPath);
+    });
 // Configure CORS to allow requests from any origin
 builder.Services.AddCors(options =>
 {
@@ -30,6 +50,7 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
+app.UseHttpLogging();
 // Use CORS policy
 app.UseCors("AllowAnyOrigin");
 
@@ -40,44 +61,55 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     // Removed Swagger UI as requested previously
 }
+app
+    .UseSwagger()
+    .UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    });
+app.Services.MigrateTransactionsDb();
 
 var foobar = "Unused variable";
 
 // Static list of products (moved from React app)
-var products = new List<Product>
-{
-    new Product { Id = "prod1", Name = "Wireless Headphones", Price = 99.99m, ImageUrl = "https://placehold.co/300x200/FFD700/000000?text=Headphones", Description = "High-fidelity sound with noise cancellation.", Stock = 10 },
-    new Product { Id = "prod2", Name = "Smartwatch", Price = 199.99m, ImageUrl = "https://placehold.co/300x200/87CEEB/000000?text=Smartwatch", Description = "Track your fitness and receive notifications.", Stock = 5 },
-    new Product { Id = "prod3", Name = "Portable Bluetooth Speaker", Price = 49.99m, ImageUrl = "https://placehold.co/300x200/98FB98/000000?text=Speaker", Description = "Compact and powerful sound on the go.", Stock = 20 },
-    new Product { Id = "prod4", Name = "Ergonomic Office Chair", Price = 249.99m, ImageUrl = "https://placehold.co/300x200/DDA0DD/000000?text=Chair", Description = "Comfortable and supportive for long working hours.", Stock = 3 },
-    new Product { Id = "prod5", Name = "4K UHD Monitor", Price = 399.99m, ImageUrl = "https://placehold.co/300x200/F08080/000000?text=Monitor", Description = "Stunning visuals for work and entertainment.", Stock = 8 },
-    new Product { Id = "prod6", Name = "Gaming Keyboard", Price = 79.99m, ImageUrl = "https://placehold.co/300x200/ADD8E6/000000?text=Keyboard", Description = "Mechanical keyboard with RGB lighting.", Stock = 15 },
-    new Product { Id = "prod7", Name = "Gaming Mouse", Price = 39.99m, ImageUrl = "https://placehold.co/300x200/FFB6C1/000000?text=Mouse", Description = "High-precision sensor for competitive gaming.", Stock = 12 },
-    new Product { Id = "prod8", Name = "Webcam 1080p", Price = 59.99m, ImageUrl = "https://placehold.co/300x200/DAA520/000000?text=Webcam", Description = "Full HD video calls and streaming.", Stock = 7 },
-    new Product { Id = "prod9", Name = "External SSD 1TB", Price = 129.99m, ImageUrl = "https://placehold.co/300x200/B0C4DE/000000?text=SSD", Description = "Fast and portable storage solution.", Stock = 4 },
-    new Product { Id = "prod10", Name = "USB-C Hub", Price = 29.99m, ImageUrl = "https://placehold.co/300x200/F4A460/000000?text=USB-C+Hub", Description = "Expand your laptop's connectivity with multiple ports.", Stock = 25 },
-    new Product { Id = "prod11", Name = "Noise-Cancelling Earbuds", Price = 129.99m, ImageUrl = "https://placehold.co/300x200/C0C0C0/000000?text=Earbuds", Description = "Compact earbuds with active noise cancellation.", Stock = 9 },
-    new Product { Id = "prod12", Name = "Smart Home Hub", Price = 89.99m, ImageUrl = "https://placehold.co/300x200/D8BFD8/000000?text=Smart+Hub", Description = "Control all your smart devices from one place.", Stock = 6 },
-    new Product { Id = "prod13", Name = "Robot Vacuum Cleaner", Price = 299.99m, ImageUrl = "https://placehold.co/300x200/AFEEEE/000000?text=Vacuum", Description = "Automated cleaning for a spotless home.", Stock = 2 },
-    new Product { Id = "prod14", Name = "Digital Camera", Price = 499.99m, ImageUrl = "https://placehold.co/300x200/F5DEB3/000000?text=Camera", Description = "Capture stunning photos and videos.", Stock = 3 },
-    new Product { Id = "prod15", Name = "Portable Projector", Price = 179.99m, ImageUrl = "https://placehold.co/300x200/9ACD32/000000?text=Projector", Description = "Enjoy movies anywhere with a compact projector.", Stock = 5 },
-    new Product { Id = "prod16", Name = "Fitness Tracker", Price = 69.99m, ImageUrl = "https://placehold.co/300x200/FFA07A/000000?text=Fitness+Tracker", Description = "Monitor your activity, heart rate, and sleep.", Stock = 18 },
-    new Product { Id = "prod17", Name = "Electric Toothbrush", Price = 45.99m, ImageUrl = "https://placehold.co/300x200/BDB76B/000000?text=Toothbrush", Description = "Advanced cleaning for healthier gums.", Stock = 14 },
-    new Product { Id = "prod18", Name = "Air Fryer", Price = 89.99m, ImageUrl = "https://placehold.co/300x200/E0FFFF/000000?text=Air+Fryer", Description = "Cook healthier meals with less oil.", Stock = 10 },
-    new Product { Id = "prod19", Name = "Coffee Maker", Price = 75.99m, ImageUrl = "https://placehold.co/300x200/D2B48C/000000?text=Coffee+Maker", Description = "Brew your perfect cup of coffee every morning.", Stock = 8 },
-    new Product { Id = "prod20", Name = "Smart Light Bulbs (2-pack)", Price = 25.99m, ImageUrl = "https://placehold.co/300x200/F0F8FF/000000?text=Smart+Bulbs", Description = "Control your lighting with your voice or app.", Stock = 30 },
-};
 
 // Endpoint to get all products
-app.MapGet("/all-products", () => products)
+app.MapGet("/all-products", async (ApplicationDbContext dbContext) => await dbContext.Products.ToListAsync())
     .WithName("GetAllProducts");
 
+app.MapPost("/products", async (ApplicationDbContext dbContext, CreateProductRequest createProductRequest, ILogger<Program> logger) =>
+    {
+        logger.LogInformation("Creating product");
+        if (string.IsNullOrEmpty(createProductRequest.Name) || createProductRequest.Price == 0)
+        {
+            return Results.BadRequest("Please provide a name or a price");
+        }
 
-app.MapPost("/place-order", async (PlaceOrderRequest orderRequest, ILogger<Program> logger) =>
+        var product = new Product()
+        {
+            Name = createProductRequest.Name,
+            Description = createProductRequest.Description,
+            Price = createProductRequest.Price,
+            ImageUrl = createProductRequest.ImageUrl,
+            Id = Guid.CreateVersion7(),
+            Stock = createProductRequest.Stock
+        };
+
+        dbContext.Products.Add(product);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Created product");
+        return Results.Created($"/all-products/{product.Id}", product);
+    })
+    .WithName("CreateProduct");
+
+
+app.MapPost("/place-order", async (ApplicationDbContext dbContext, PlaceOrderRequest orderRequest, ILogger<Program> logger) =>
 {
     await Task.Delay(500); // Simulate network delay
 
-    var outOfStockItems = new List<string>();
+    var outOfStockItems = new List<Guid>();
+
+    var products = await dbContext.Products.ToListAsync();
     foreach (var item in orderRequest.Items)
     {
         var productInStock = products.FirstOrDefault(p => p.Id == item.Id);
@@ -137,6 +169,6 @@ app.MapPost("/place-order", async (PlaceOrderRequest orderRequest, ILogger<Progr
 })
 .WithName("PlaceOrder");
 
-app.Run("http://0.0.0.0:8080");
+app.Run("http://0.0.0.0:8088");
 
 public partial class Program { }
