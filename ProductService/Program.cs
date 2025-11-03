@@ -169,6 +169,6 @@ app.MapPost("/place-order", async (ApplicationDbContext dbContext, PlaceOrderReq
 })
 .WithName("PlaceOrder");
 
-app.Run("http://0.0.0.0:8088");
+app.Run("http://0.0.0.0:8080");
 
 public partial class Program { }
