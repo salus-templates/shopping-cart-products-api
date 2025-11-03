@@ -17,7 +17,6 @@ public static class DependencyInjection
                 action => action
                     .EnableRetryOnFailure()
             );
-            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
 
         // Database Instance Management repositories
@@ -28,6 +27,6 @@ public static class DependencyInjection
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // dbContext.Database.Migrate();
+        dbContext.Database.Migrate();
     }
 }

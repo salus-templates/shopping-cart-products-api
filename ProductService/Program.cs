@@ -91,7 +91,7 @@ app.MapPost("/products", async (ApplicationDbContext dbContext, CreateProductReq
             Description = createProductRequest.Description,
             Price = createProductRequest.Price,
             ImageUrl = createProductRequest.ImageUrl,
-            Id = Guid.CreateVersion7(),
+            Id = Guid.NewGuid(),
             Stock = createProductRequest.Stock
         };
 
