@@ -106,8 +106,6 @@ app
     });
 app.Services.MigrateTransactionsDb();
 
-var foobar = "Unused variable";
-
 // Static list of products (moved from React app)
 
 // Endpoint to get all products
@@ -321,7 +319,7 @@ app.MapGet("/test/error", (ILogger<Program> logger) =>
 })
 .WithName("TestError");
 
-app.MapPost("/test/bulk-logs", (ILogger<Program> logger, BulkLogRequest request) =>
+app.MapPost("/test/bulk-logs", async (ILogger<Program> logger, BulkLogRequest request) =>
 {
     logger.LogInformation("[BULK_LOG] Starting bulk log generation: {Count} logs requested", request.Count);
     
@@ -381,6 +379,9 @@ logger.LogInformation("=== Application Started Successfully ===");
 logger.LogInformation("Server listening on http://0.0.0.0:8080");
 logger.LogInformation("Swagger UI available at http://0.0.0.0:8080/swagger");
 
+// Configure URL binding
+app.Urls.Add("http://0.0.0.0:8080");
+
 // Add shutdown hook for cleanup logging
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (sender, e) => {
@@ -393,7 +394,7 @@ Console.CancelKeyPress += (sender, e) => {
 
 try
 {
-    await app.RunAsync("http://0.0.0.0:8080", cts.Token);
+    await app.RunAsync(cts.Token);
 }
 catch (OperationCanceledException)
 {
