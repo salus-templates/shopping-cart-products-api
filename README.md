@@ -16,3 +16,5 @@ The application is exposed on port `8080`.
 
 - `ConnectionStrings__ApplicationDbConnection` - database connection string e.g. `User ID=shoppingcartadmin;Password=mysecurepassowrd;Server=127.0.0.1;Port=5432;Database=shoppingcart;Pooling=true;`
 - `ASPNETCORE_URLS` - (optional) if present, overrides the bind address for the application e.g. `0.0.0.0:8080`
+
+## Test
